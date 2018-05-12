@@ -110,7 +110,7 @@ bool IsPrimeLukaTest(const unsigned number, const unsigned reliability)
     }
 #pragma endregion
 
-    for (unsigned i = 1; i < reliability; ++i)
+    for (unsigned i = 0; i < reliability; ++i)
     {
         const unsigned a = 2 + (Gen() % genMod);
         if (RLpow(a, minusOne, number) != 1)
@@ -203,10 +203,10 @@ enum Test
 
 unsigned PrimeGen(const short bits, Test primeTest, unsigned reliability)
 {
-    static bool(*tests[])(const unsigned, const unsigned) = { &IsPrimeFarmTest, &IsPrimeSSTest, &IsPrimeMRTest, &IsPrimeLukaTest };
-
     if (primeTest < Test::Farm || primeTest > Test::Luka)
         throw std::exception("Invalid prime test parameter");
+
+    static bool(*const tests[])(const unsigned, const unsigned) = { &IsPrimeFarmTest, &IsPrimeSSTest, &IsPrimeMRTest, &IsPrimeLukaTest };
 
     while (true)
     {
