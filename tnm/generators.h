@@ -5,12 +5,12 @@
 #include "utility.h"
 #include <exception>
 
-unsigned Gen()
+unsigned Gen(const unsigned short bits = 32)
 {
-    return (rand() << 17) ^ (rand() << 2) ^ rand();
+    return ((rand() << 17) ^ (rand() << 2) ^ rand()) >> (32 - bits);
 }
 
-bool IsPrimeFarmTest(unsigned number, const unsigned reliability)
+bool IsPrimeFarmTest(const unsigned number, const unsigned reliability)
 {
     const unsigned
         degree = number - 1,
@@ -133,64 +133,9 @@ bool IsPrimeLukaTest(const unsigned number, const unsigned reliability)
     return false;
 }
 
-/*
-OLD bool IsPrimeLukaTest(const unsigned number, const unsigned reliability)
+unsigned OddGen(const unsigned short bits)
 {
-    const unsigned
-        genMod = number - 3,
-        minusOne = number - 1,
-        sqrtMinusOne = intSqrt(minusOne);
-    unsigned
-        subjNumber = minusOne,
-        dividers[32],
-        count = 1;
-    dividers[0] = 2;
-    subjNumber >>= RZ(subjNumber);
-    for (unsigned i = 3; i <= sqrtMinusOne; i += 2)
-    {
-        if (subjNumber % i == 0)
-        {
-            dividers[count] = i;
-            do
-            {
-                subjNumber /= i;
-            } while (subjNumber % i == 0);
-            ++count;
-        }
-    }
-    if (subjNumber > 1)
-    {
-        dividers[count++] = subjNumber;
-    }
-
-    for (unsigned i = 0; i < reliability; ++i)
-    {
-        const unsigned a = 2 + (Gen() % genMod);
-        if (RLpow(a, minusOne, number) != 1)
-        {
-            return false;
-        }
-        bool flag = true;
-        for (unsigned j = 0; j < count; ++j)
-        {
-            if (RLpow(a, minusOne / dividers[j], number) == 1)
-            {
-                flag = false;
-                break;
-            }
-        }
-        if (flag)
-        {
-            return true;
-        }
-    }
-    return false;
-}
-*/
-
-unsigned OddGen(const unsigned bits)
-{
-    return (Gen() >> (32 - bits)) | (1u << (bits - 1)) | 1u;
+    return Gen(bits) | (1u << (bits - 1)) | 1u;
 }
 
 enum Test
@@ -208,12 +153,39 @@ unsigned PrimeGen(const short bits, Test primeTest, unsigned reliability)
 
     static bool(*const tests[])(const unsigned, const unsigned) = { &IsPrimeFarmTest, &IsPrimeSSTest, &IsPrimeMRTest, &IsPrimeLukaTest };
 
-    while (true)
+    unsigned retval = OddGen(bits);
+
+    while (tests[primeTest](retval, reliability) == false)
     {
-        unsigned retval = OddGen(bits);
-        if (tests[primeTest](retval, reliability) == true)
-        {
-            return retval;
-        }
+        retval = OddGen(bits);
     }
+
+    return retval;
+}
+
+unsigned long long StrongPrimeGen(const short bits)
+{
+    unsigned
+        s = PrimeGen(bits, Test::MR, 5),
+        t = PrimeGen(bits, Test::MR, 5);
+    while (t == s)
+    {
+        t = PrimeGen(bits, Test::MR, 5);
+    }
+    unsigned i = Gen(31) + 1;
+    unsigned long long r = 1 + ((i * t) << 1);
+    while (IsPrimeMRTest(r, 5) == false)
+    {
+        ++i;
+        r = 1 + ((i * t) << 1);
+    }
+    unsigned long long p0 = ((RLpow(s, r - 2, r) * s) << 1) - 1;
+    i = Gen(31) + 1;
+    unsigned long long p = p0 + ((i * r * s) << 1);
+    while (IsPrimeMRTest(p, 5) == false)
+    {
+        ++i;
+        p = p0 + ((i * r * s) << 1);
+    }
+    return p;
 }

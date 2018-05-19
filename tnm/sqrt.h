@@ -4,16 +4,11 @@
 
 unsigned intSqrt(const unsigned x)
 {
-    const unsigned leadingZeros = LZ(x);
-    unsigned retval;
-    if (leadingZeros & 1)
-    {
-        retval = 0xffffffff >> (16 + ((leadingZeros + 1) >> 1));
-    }
-    else
-    {
-        retval = 1 << ((32 - leadingZeros) >> 1);
-    }
+    unsigned retval =
+        LZ(x) & 1 ?
+        0xffffffff >> (16 + ((leadingZeros + 1) >> 1))
+        :
+        1 << ((32 - leadingZeros) >> 1);
     while (true)
     {
         unsigned tmp = ((x / retval) + retval) >> 1;

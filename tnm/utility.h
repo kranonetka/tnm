@@ -13,36 +13,30 @@ short RZ(unsigned vector)
         return -1;
 
     short count = 0;
-
     if (vector << 16 == 0)
     {
         count += 16;
         vector >>= 16;
     }
-
     if (vector << 24 == 0)
     {
         count += 8;
         vector >>= 8;
     }
-
     if (vector << 28 == 0)
     {
         count += 4;
         vector >>= 4;
     }
-
     if (vector << 30 == 0)
     {
         count += 2;
         vector >>= 2;
     }
-
     if (vector << 31 == 0)
     {
         ++count;
     }
-
     return count;
 }
 
@@ -59,25 +53,21 @@ short LZ(unsigned vector)
         count += 16;
         vector <<= 16;
     }
-
     if (vector >> 24 == 0)
     {
         count += 8;
         vector <<= 8;
     }
-
     if (vector >> 28 == 0)
     {
         count += 4;
         vector <<= 4;
     }
-
     if (vector >> 30 == 0)
     {
         count += 2;
         vector <<= 2;
     }
-
     if (vector >> 31 == 0)
     {
         ++count;
