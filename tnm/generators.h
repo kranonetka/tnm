@@ -5,9 +5,16 @@
 #include "utility.h"
 #include <exception>
 
+
+#include <iostream>
+#include <bitset>
+using namespace std;
+
+
 unsigned Gen(const unsigned short bits = 32)
 {
-    return ((rand() << 17) ^ (rand() << 2) ^ rand()) >> (32 - bits);
+    unsigned retval = ((rand() << 17) ^ (rand() << 2) ^ rand());
+    return retval >> (32 - bits);
 }
 
 bool IsPrimeFarmTest(const unsigned number, const unsigned reliability)
@@ -172,20 +179,50 @@ unsigned long long StrongPrimeGen(const short bits)
     {
         t = PrimeGen(bits, Test::MR, 5);
     }
-    unsigned i = Gen(31) + 1;
+    //cout << "s  ==  " << s << endl;
+    //cout << "t  ==  " << t << endl;
+    unsigned i = 1;
     unsigned long long r = 1 + ((i * t) << 1);
     while (IsPrimeMRTest(r, 5) == false)
     {
         ++i;
         r = 1 + ((i * t) << 1);
     }
+    if ((r - 1) % t != 0)
+    {
+        //cout << "ERROR rt" << endl;
+        return 0;
+    }
+    //cout << "r  ==  " << r << " (i  ==  " << i << ")" << endl;
     unsigned long long p0 = ((RLpow(s, r - 2, r) * s) << 1) - 1;
-    i = Gen(31) + 1;
+    if ((p0 + 1) % s != 0)
+    {
+        //cout << "ERROR p0s" << endl;
+        return 1;
+    }
+    if ((p0 - 1) % r != 0)
+    {
+        cout << "ERROR p0r" << endl;
+        return 0;
+    }
+    //cout << "p0 ==  " << p0 << endl;
+    i = 1;
     unsigned long long p = p0 + ((i * r * s) << 1);
     while (IsPrimeMRTest(p, 5) == false)
     {
         ++i;
         p = p0 + ((i * r * s) << 1);
     }
+    if ((p - 1) % r != 0)
+    {
+        cout << "ERROR pr" << endl;
+        return 0;
+    }
+    if ((p + 1) % s != 0)
+    {
+        cout << "ERROR ps" << endl;
+        return 0;
+    }
+    //cout << "p  ==  " << p << " (j ==   " << i << ")" << endl;
     return p;
 }
